@@ -3,6 +3,7 @@ use poise::serenity_prelude::Timestamp;
 
 use crate::{Context, Error};
 
+/// Test connection speed.
 #[command(slash_command)]
 pub async fn ping(ctx: Context<'_>) -> Result<(), Error> {
 	let before_timestamp = Timestamp::now().timestamp_millis();

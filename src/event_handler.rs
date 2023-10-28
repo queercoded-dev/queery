@@ -7,6 +7,7 @@ use tracing::info;
 use crate::RESOLUTION;
 use crate::{database::App, Error};
 
+/// Runs for each event recieved in the discord server.
 pub async fn event_handler(
     _ctx: &serenity::Context,
     event: &Event<'_>,
@@ -30,6 +31,7 @@ pub async fn event_handler(
     Ok(())
 }
 
+/// Logs the message recieved for a message event in `event_handler`.
 async fn log(data: &App, message: &Message) {
     let timestamp = message.timestamp.timestamp();
     #[allow(clippy::cast_possible_wrap)]
