@@ -1,11 +1,13 @@
 #![warn(clippy::all, clippy::pedantic, clippy::nursery, clippy::unwrap_used)]
+#![allow(clippy::cast_possible_wrap)]
 
 mod commands;
 mod database;
-mod log;
 mod event_handler;
+mod log;
+mod plotting;
 
-use commands::ping;
+use commands::{logs, ping};
 use dotenvy::dotenv;
 use poise::serenity_prelude::GatewayIntents;
 use tracing::{error, info};
@@ -28,13 +30,13 @@ async fn main() -> Result<(), poise::serenity_prelude::Error> {
 	let app = App::new().await.expect("Failed to initialise app state");
 
 	let options = poise::FrameworkOptions {
-		commands: vec![ping()],
+		commands: vec![ping(), logs()],
 		command_check: Some(|ctx| {
 			Box::pin(async move { Ok(ctx.author().id.0 == 366_491_742_679_072_768) })
 		}),
 		event_handler: |ctx, event, framework, data| {
-            Box::pin(event_handler::event_handler(ctx, event, framework, data))
-        },
+			Box::pin(event_handler::event_handler(ctx, event, framework, data))
+		},
 		pre_command: |ctx| {
 			Box::pin(async move {
 				info!("Executing command {}...", ctx.command().qualified_name);
@@ -47,7 +49,7 @@ async fn main() -> Result<(), poise::serenity_prelude::Error> {
 		},
 		on_error: |err| {
 			Box::pin(async move {
-				error!("Error while executing command: {}", err);
+				error!("Error while executing command: {}", err.to_string());
 			})
 		},
 		..Default::default()
