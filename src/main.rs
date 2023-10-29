@@ -6,6 +6,7 @@ mod database;
 mod event_handler;
 mod log;
 mod plotting;
+mod time_period;
 
 use commands::{logs, ping};
 use dotenvy::dotenv;
