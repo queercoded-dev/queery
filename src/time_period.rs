@@ -5,12 +5,15 @@ pub enum TimePeriod {
 	#[name = "Half Day"]
 	HalfDay,
 	Day,
+	Week,
 }
 
 impl TimePeriod {
 	const HOUR: i64 = 3600;
 	const HALFDAY: i64 = Self::HOUR * 6;
 	const DAY: i64 = Self::HOUR * 12;
+	const WEEK: i64 = Self::DAY * 7;
+
 	/// Gets the timestamp that is the cases before the `timestamp`
 	///
 	/// # Example
@@ -27,6 +30,7 @@ impl TimePeriod {
 			Self::Hour => timestamp - Self::HOUR,
 			Self::HalfDay => timestamp - Self::HALFDAY,
 			Self::Day => timestamp - Self::DAY,
+			Self::Week => timestamp - Self::WEEK,
 		}
 	}
 }

@@ -32,7 +32,6 @@ pub async fn event_handler(
 /// Logs the message recieved for a message event in `event_handler`.
 async fn log(data: &App, message: &Message) {
 	let timestamp = message.timestamp.timestamp();
-	#[allow(clippy::cast_possible_wrap)]
 	let channel_id = *message.channel_id.as_u64() as i64;
 
 	let normalized_timestamp = timestamp - timestamp % RESOLUTION;
