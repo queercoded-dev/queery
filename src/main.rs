@@ -10,7 +10,7 @@ mod time_period;
 
 use commands::{logs, ping};
 use dotenvy::dotenv;
-use poise::serenity_prelude::GatewayIntents;
+use poise::serenity_prelude::{GatewayIntents, GuildContainer};
 use tracing::{error, info};
 
 use crate::database::App;
@@ -23,6 +23,8 @@ type Context<'a> = poise::Context<'a, App, Error>;
 /// Eg: a resolution of 30 would count the amount of messages in spans of 30 seconds.
 const RESOLUTION: i64 = 30;
 
+const MODERATOR_ROLE_ID: u64 = 928_317_082_670_604_298;
+
 #[tokio::main]
 async fn main() -> Result<(), poise::serenity_prelude::Error> {
 	dotenv().ok();
@@ -33,7 +35,16 @@ async fn main() -> Result<(), poise::serenity_prelude::Error> {
 	let options = poise::FrameworkOptions {
 		commands: vec![ping(), logs()],
 		command_check: Some(|ctx| {
-			Box::pin(async move { Ok(ctx.author().id.0 == 366_491_742_679_072_768) })
+			// Only allows moderators to invoke commands.
+			Box::pin(async move {
+				let Some(guild) = ctx.partial_guild().await else {
+					return Err("Could not find guild".into());
+				};
+				Ok(ctx
+					.author()
+					.has_role(ctx.http(), GuildContainer::Guild(guild), MODERATOR_ROLE_ID)
+					.await?)
+			})
 		}),
 		event_handler: |ctx, event, framework, data| {
 			Box::pin(event_handler::event_handler(ctx, event, framework, data))

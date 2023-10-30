@@ -1,7 +1,9 @@
+use chrono::NaiveDateTime;
 use lodepng::encode24;
 use plotters::backend::{PixelFormat, RGBPixel};
 use plotters::prelude::*;
 use plotters::style::full_palette::{GREY_900, GREY_A100};
+use tracing::info;
 
 use crate::log::Log;
 use crate::{Error, RESOLUTION};
@@ -21,11 +23,12 @@ pub fn create_log_graph(
 	start_timestamp: i64,
 	end_timestamp: i64,
 ) -> Result<Vec<u8>, Error> {
+	logs.sort_by(|lhs, rhs| lhs.time.cmp(&rhs.time));
+
 	if logs.is_empty() {
+		info!("Logs vector empty, cannot generate graph");
 		return Err("Logs vector empty, cannot generate graph".into());
 	}
-
-	logs.sort_by(|lhs, rhs| lhs.time.cmp(&rhs.time));
 
 	// Calculates the highest count of messages.
 	let max = logs.iter().map(|log| log.count).max().unwrap_or(0);
@@ -39,8 +42,12 @@ pub fn create_log_graph(
 		end_timestamp,
 	)?;
 
+	info!("Graph image generated");
+
 	// Encode data to png.
 	let image = encode24(&buffer, HEIGHT as usize, WIDTH as usize)?;
+
+	info!("Graph image encoded");
 
 	Ok(image)
 }
@@ -86,6 +93,10 @@ fn generate_graph(
 		.bold_line_style(GREY_900)
 		.x_desc("Time")
 		.y_desc("Messages")
+		.x_label_formatter(&|x| {
+			let dt = NaiveDateTime::from_timestamp_opt(*x, 0).unwrap_or_default();
+			dt.format("%H:%M").to_string()
+		})
 		.x_label_style(("sans-serif", 16).into_font().color(&GREY_A100))
 		.y_label_style(("sans-serif", 20).into_font().color(&GREY_A100))
 		.axis_desc_style(("sans-serif", 25).with_color(GREY_A100))
