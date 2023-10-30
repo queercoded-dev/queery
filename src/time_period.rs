@@ -10,8 +10,8 @@ pub enum TimePeriod {
 
 impl TimePeriod {
 	const HOUR: i64 = 3600;
-	const HALFDAY: i64 = Self::HOUR * 6;
-	const DAY: i64 = Self::HOUR * 12;
+	const HALFDAY: i64 = Self::HOUR * 12;
+	const DAY: i64 = Self::HOUR * 24;
 	const WEEK: i64 = Self::DAY * 7;
 
 	/// Gets the timestamp that is the cases before the `timestamp`
