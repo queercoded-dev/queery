@@ -1,3 +1,4 @@
+/// Represent a period of time.
 #[derive(Debug, Clone, Copy, poise::ChoiceParameter)]
 pub enum TimePeriod {
 	Hour,
@@ -17,7 +18,7 @@ impl TimePeriod {
 	/// ```
 	/// let now = Timestamp::now().timestamp(); // Eg 1698569658
 	/// let period = TimePeriod::Hour;
-	/// let an_hour_ago = 1698566058
+	/// let an_hour_ago = 1698566058 // 3600 less than now
 	///
 	/// assert!(period.relative_timestamp_from(now), an_hour_ago)
 	/// ```
