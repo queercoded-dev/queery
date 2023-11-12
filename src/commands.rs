@@ -1,6 +1,8 @@
 use poise::command;
 use poise::serenity_prelude::{AttachmentType, Channel, Timestamp};
+use tracing::{error, info};
 
+use crate::log::ChangeResolution;
 use crate::plotting::create_log_graph;
 use crate::time_period::TimePeriod;
 use crate::{Context, Error};
@@ -28,26 +30,32 @@ pub async fn ping(ctx: Context<'_>) -> Result<(), Error> {
 }
 
 /// Fetch the logs for the current channel.
-#[command(slash_command)]
+#[command(slash_command, required_permissions="MANAGE_CHANNELS")]
 pub async fn logs(
 	ctx: Context<'_>,
 	// How far back to search.
 	time_period: TimePeriod,
-	// The channel to fetch the logs for, defaults to the current channel
+	// The channel to fetch the logs for, defaults to the current channel.
 	channel: Option<Channel>,
 ) -> Result<(), Error> {
 	let channel_id = channel.map_or_else(|| ctx.channel_id(), |channel| channel.id());
 
-	let end_timestamp = Timestamp::now().timestamp();
-	let start_timestamp = time_period.relative_timestamp_from(end_timestamp);
+	let now_timestamp = Timestamp::now();
+	let search_start_timestamp = time_period.relative_timestamp_from(now_timestamp.timestamp());
 
-	let mut logs = ctx
+	let logs = ctx
 		.data()
-		.fetch_logs(channel_id.0 as i64, i64::MIN, i64::MAX)
+		.fetch_logs(channel_id.0 as i64, search_start_timestamp, now_timestamp.timestamp())
 		.await?;
 
-	// Filter out the logs that are out of the time bounds.
-	logs.retain(|log| log.time < end_timestamp && log.time > start_timestamp);
+	// Combign logs together to make displaying on graph easier
+	// Todo: This has not been fully tested yet
+	let logs = match time_period {
+		TimePeriod::Hour => logs,
+		TimePeriod::HalfDay => logs.change_resolution(360),
+		TimePeriod::Day => logs.change_resolution(720),
+		TimePeriod::Week => logs.change_resolution(2520),
+	};
 
 	if logs.is_empty() {
 		ctx.say("No logs found for this period").await?;
@@ -59,7 +67,13 @@ pub async fn logs(
 		.await
 		.unwrap_or_else(|| "Current Channel".to_string());
 
-	let graph = create_log_graph(logs, &channel_name, start_timestamp, end_timestamp)?;
+	let graph = match create_log_graph(logs, &channel_name, search_start_timestamp, now_timestamp.timestamp(), time_period) {
+		Ok(graph) => graph,
+		Err(err) => {
+			error!("Failed to generate log graph: {}", err);
+			return Err(err)
+		}
+	};
 
 	ctx.send(|reply| {
 		reply.attachment(AttachmentType::Bytes {
@@ -68,6 +82,12 @@ pub async fn logs(
 		})
 	})
 	.await?;
+
+
+	// Time it took for command to be run.
+	let finished_timestamp = Timestamp::now().timestamp_millis() - now_timestamp.timestamp_millis();
+
+	info!("Command took {}ms", finished_timestamp);
 
 	Ok(())
 }
