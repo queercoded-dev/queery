@@ -13,7 +13,6 @@ services:
   db:
     container_name: "queery-db"
     image: postgres:16
-    restart: always
     env_file:
       - .env
     ports:
