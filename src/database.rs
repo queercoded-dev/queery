@@ -112,7 +112,7 @@ impl App {
 	}
 
 	/// Fetch all of the logs from a channel between two UNIX timestamps.
-	pub async fn fetch_logs(
+	pub async fn fetch_logs_between(
 		&self,
 		channel_id: i64,
 		lower_time_bound: i64,

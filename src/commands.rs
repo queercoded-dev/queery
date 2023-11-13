@@ -45,7 +45,7 @@ pub async fn logs(
 
 	let logs = ctx
 		.data()
-		.fetch_logs(channel_id.0 as i64, search_start_timestamp, now_timestamp.timestamp())
+		.fetch_logs_between(channel_id.0 as i64, search_start_timestamp, now_timestamp.timestamp())
 		.await?;
 
 	// Combign logs together to make displaying on graph easier
