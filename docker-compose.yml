@@ -1,6 +1,7 @@
 version: '3.8'
 services:
   queery:
+    container_name: "queery"
     image: queery:latest
     env_file: .env
     command: ["queery"]
@@ -8,7 +9,9 @@ services:
       dockerfile: Dockerfile
     depends_on:
       - db
+    restart: unless-stopped
   db:
+    container_name: "queery-db"
     image: postgres:16
     restart: always
     env_file:
@@ -17,5 +20,6 @@ services:
       - '5432:5432'
     volumes:
        - db-data:/var/lib/postgresql/data
+    restart: unless-stopped
 volumes:
   db-data:
