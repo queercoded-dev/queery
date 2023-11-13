@@ -33,9 +33,9 @@ pub async fn ping(ctx: Context<'_>) -> Result<(), Error> {
 #[command(slash_command, required_permissions="MANAGE_CHANNELS")]
 pub async fn logs(
 	ctx: Context<'_>,
-	// How far back to search.
+	#[description="How far back to search."]
 	time_period: TimePeriod,
-	// The channel to fetch the logs for, defaults to the current channel.
+	#[description="The channel to fetch the logs for, defaults to the current channel."]
 	channel: Option<Channel>,
 ) -> Result<(), Error> {
 	let channel_id = channel.map_or_else(|| ctx.channel_id(), |channel| channel.id());
